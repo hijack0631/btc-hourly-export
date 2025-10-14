@@ -1,0 +1,31 @@
+name: generate-csv
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # weekly on Sundays 00:00 UTC
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generate CSV
+        run: |
+          python get_btcusdt_hourly.py --months 10 --tz "UTC" --out btcusdt_1h_10months.csv
+      - name: Commit & push CSV
+        env:
+          TOKEN: ${{ secrets.PERSONAL_TOKEN }}   # set in repo secrets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add btcusdt_1h_10months.csv
+          git commit -m "Update BTCUSDT 1h 10-month CSV"
+          git push https://${TOKEN}@github.com/${{ github.repository }} HEAD:main
