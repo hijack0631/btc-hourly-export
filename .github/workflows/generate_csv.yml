@@ -22,7 +22,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Generate BTC hourly CSV (CoinGecko)
+      - name: Generate BTC hourly CSV (CoinGecko, fixed: do NOT send interval param)
         run: |
           python get_btc_hourly_coingecko.py --months 10 --out btcusdt_1h_10months.csv
 
