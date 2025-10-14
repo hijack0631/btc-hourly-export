@@ -1,16 +1,22 @@
 name: generate-csv-coingecko
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 0'   # weekly on Sundays 00:00 UTC
+    - cron: '0 0 * * 0'  # weekly on Sundays 00:00 UTC
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -22,21 +28,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Generate BTC hourly CSV (CoinGecko, fixed: do NOT send interval param)
+      - name: Generate BTC hourly CSV (CoinGecko)
         run: |
           python get_btc_hourly_coingecko.py --months 10 --out btcusdt_1h_10months.csv
 
       - name: Commit & push CSV if changed
-        env:
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: actions@github.com
         run: |
-          git config user.name "$GIT_AUTHOR_NAME"
-          git config user.email "$GIT_AUTHOR_EMAIL"
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
           git add btcusdt_1h_10months.csv || true
-          if ! git diff --staged --quiet; then
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
             git commit -m "Update BTC hourly (10 months) via CoinGecko" || true
             git push
-          else
-            echo "No changes to commit"
           fi
