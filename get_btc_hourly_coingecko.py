@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 import argparse
 import sys
 
-COINGECKO_RANGE_URL = "https://api.coingecko.com/api/v3/coins/ethereum/market_chart/range"
+COINGECKO_RANGE_URL = "https://api.coingecko.com/api/v3/coins/solana/market_chart/range"
 MAX_DAYS_PER_REQUEST = 90  # CoinGecko provides hourly granularity for <=90 days windows
 
 def to_unix(dt: datetime):
