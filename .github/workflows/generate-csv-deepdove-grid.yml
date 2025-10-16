@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate BTC hourly CSV (CoinGecko OHLCV)
         run: |
-          python get_btc_hourly_coingecko.py --months 10 --out btcusdt_1h_10months.csv
+          python get_btc_hourly_for_grid_research.py --months 10 --out btcusdt_1h_10months.csv
 
       - name: Commit & push CSV if changed
         run: |
