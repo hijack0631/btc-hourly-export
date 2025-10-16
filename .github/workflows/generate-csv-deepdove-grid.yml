@@ -1,0 +1,52 @@
+name: generate-csv-deepdive-grid
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # weekly on Sundays 00:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy pyarrow requests matplotlib ta scipy
+
+      - name: Generate BTC hourly CSV (CoinGecko OHLCV)
+        run: |
+          python get_btc_hourly_coingecko.py --months 10 --out btcusdt_1h_10months.csv
+
+      - name: Commit & push CSV if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add btcusdt_1h_10months.csv || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update BTC hourly OHLCV (10 months) via CoinGecko" || true
+            git push
+          fi
+
+      - name: Upload CSV as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: btcusdt_1h_10months
+          path: btcusdt_1h_10months.csv
